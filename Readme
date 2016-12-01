@@ -32,7 +32,7 @@ Creating a virtual environment for the project
 	pip install python-dateutil
 	pip install pytz
 	cd stud
-	git clone https://github.com/krishraghuram/stud-webserver.git
+	git clone https://github.com/krishraghuram/stud-webserver.git stud
 	cd stud/
 	nano stud/settings.py
 		set ALLOWED_HOSTS=['machine-ip']
@@ -53,25 +53,25 @@ https://docs.djangoproject.com/en/1.10/howto/static-files/deployment/
 	sudo apt-get install apache2 libapache2-mod-wsgi
 	sudo nano /etc/apache2/sites-available/000-default.conf
 		<VirtualHost *:80>
-		    
-		    . . .
-		    . . . 
-		    . . .
+			
+			. . .
+			. . . 
+			. . .
 
-	        ServerName machine-ip
-	        Alias /static /home/ubuntu/stud/stud/static/
-	        <Directory /home/ubuntu/stud/stud/static>
-	                Require all granted
-	        </Directory>
-	        <Directory /home/ubuntu/stud/stud/stud/>
-	                <Files wsgi.py>
-	                        Require all granted
-	                </Files>
-	        </Directory>
+			ServerName machine-ip
+			Alias /static /home/ubuntu/stud/stud/static/
+			<Directory /home/ubuntu/stud/stud/static>
+				Require all granted
+			</Directory>
+			<Directory /home/ubuntu/stud/stud/stud/>
+				<Files wsgi.py>
+					Require all granted
+				</Files>
+			</Directory>
 
-	        WSGIDaemonProcess stud python-home=/home/ubuntu/stud/ python-path=/home/ubuntu/stud/stud
-	        WSGIProcessGroup stud
-	        WSGIScriptAlias / /home/ubuntu/stud/stud/stud/wsgi.py
+			WSGIDaemonProcess stud python-home=/home/ubuntu/stud/ python-path=/home/ubuntu/stud/stud
+			WSGIProcessGroup stud
+			WSGIScriptAlias / /home/ubuntu/stud/stud/stud/wsgi.py
 		</VirtualHost>
 	chmod 664 ~/stud/stud/db.sqlite3
 	sudo chown :www-data ~/stud/stud/db.sqlite3
@@ -80,8 +80,13 @@ https://docs.djangoproject.com/en/1.10/howto/static-files/deployment/
 		You may get this. Dont worry about it.
 		AH00558: apache2: Could not reliably determine the server's fully qualified domain name, using 127.0.0.1. Set the 'ServerName' directive globally to suppress this message
 		Syntax OK
-	If things still dont work,
+	cd ~/stud/stud
+	mkdir static
+	python manage.py collectstatic
+	sudo systemctl restart apache2
+	Things should work by now
+	If things still dont work, try this,
 		sudo chown :www-data ~/stud/stud/static/
 
 Add "python manage.py checkmail" as a CRON job
-
+	@hourly . stud/bin/activate && python /home/ubuntu/stud/stud/manage.py checkmail >> /home/ubuntu/cron.log 2>&1
