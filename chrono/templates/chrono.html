@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+{% load static %}
+<html>
+
+<head>
+	<meta charset="UTF-8">
+	<title>Chrono</title>
+	<!-- Stylesheets -->
+	<link rel="stylesheet" href="{% static 'stylesheets/calendarview.css' %}">
+	<link rel="stylesheet" href="{% static 'stylesheets/chrono.css' %}">
+	<link rel="stylesheet" href="{% static 'stylesheets/list.css' %}">
+	<!-- Javascript -->
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+	<script src="{% static 'javascripts/prototype.js' %}"></script>
+	<script src="{% static 'javascripts/calendarview.js' %}"></script>
+	<script src="{% static 'javascripts/list.js' %}"></script>
+	<script src="{% static 'javascripts/jquery-dateFormat.js' %}"></script>
+	<script src="{% static 'javascripts/event-retriever.js' %}"></script>	
+	<script>
+		function setupCalendars() { Calendar.setup(
+			{
+				dateField: 'dateField',
+				parentElement: 'calendar'
+			}
+		)};
+		Event.observe(window, 'load', function() { setupCalendars() })
+	</script>
+	<script>
+		//These will be used by event-retriever.js
+		var EventView = "{% url 'EventView' %}";
+		var csrftoken = '{{ csrf_token }}';
+	</script>
+</head>
+
+
+
+<body>
+	<div class="div">
+		<h1 class="heading">
+			Calendar
+		</h1>
+		<div id="embeddedExample" style="">
+			<div id="calendar" style="margin-left: auto; margin-right: auto"></div>
+			<div id="dateField" class="dateField">
+				<!-- This is filled dynamically by javascript event-retriever.js -->
+			</div>
+		</div>
+
+		<h1 class="heading">
+				Events
+		</h1>
+		<p id="events" style="text-align: center;">
+		<div class="list">
+			<ul id="event-list">
+				<!-- This is dynamic list populated by javascript event-retriever.js -->
+			</ul>
+		</div>
+		</p>
+	</div>
+</body>
+</html>

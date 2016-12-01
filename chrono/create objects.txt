@@ -1,0 +1,8 @@
+from chrono.models import Event
+import datetime
+a = datetime.datetime.now()
+hour= datetime.timedelta(hours=1)
+day = datetime.timedelta(days=1)
+for i in range(25):
+        e = Event(title=str(i), start_dt=a+i*day, end_dt=a+i*day+hour, venue=str(i+1))
+        e.save()
