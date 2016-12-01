@@ -83,7 +83,7 @@ WSGI_APPLICATION = 'stud.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'chrono',
+        'NAME': 'stud',
         'USER': 'root',
         'PASSWORD': '',
         'HOST': 'localhost',
