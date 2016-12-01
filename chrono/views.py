@@ -10,31 +10,7 @@ from dateutil.parser import *
 import datetime
 
 class ChronoView(TemplateView):
-	template_name = 'chrono.html'
-
-# class EventView(ListView):
-# 	model = Events
-# 	template_name = 'event.html'
-# 	context_object_name = 'events'
-# 	def get_queryset(self):
-# 		return Events.objects.order_by('start_datetime')[:5]
-
-# date_ev = ''
-# @csrf_exempt
-# def date_of_events(request):
-# 	if request.method == 'POST':
-# 		date_ev = request.POST.get('e_date')
-# 		today = parse(date_ev).date()
-# 	#	e = Events.objects.all()
-# 		e = Events.objects.filter(start_datetime__gte = today).order_by('start_datetime')
-# 		d = [o.stringconv() for o in e]		
-# 		print d
-# 		if e == 'None':
-# 			return HttpResponse("no event")
-# 		else:
-# 			return HttpResponse(d)
-# 	else:
-# 		return HttpResponse("no date")
+	template_name = 'chrono/chrono.html'
 
 def EventView(request):
 	# print request.method

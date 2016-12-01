@@ -1,0 +1,51 @@
+On a fresh install of linux, the following steps need to be followed to set up the stud-webserver
+
+Setting up proxy
+	Set up proxy for apt in /etc/apt/apt.conf
+	Set up environment proxy in ~/.bashrc
+	For more about proxy settings, check out this link
+	https://raghuramkrishnaswami.wordpress.com/2016/01/18/setting-up-proxyies-in-ubuntu/
+
+Installing pip and virtualenv
+	sudo apt-get update
+	sudo apt-get install python-pip python-dev build-essential 
+	sudo -E pip install --upgrade pip
+	sudo -E pip install --upgrade virtualenv 
+
+Installing mariadb-server
+	sudo apt-get install software-properties-common
+	sudo -E apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xcbcb082a1bb943db
+	sudo -E add-apt-repository 'deb [arch=amd64,i386,ppc64el] http://nyc2.mirrors.digitalocean.com/mariadb/repo/10.0/ubuntu trusty main'
+	sudo apt-get update
+	sudo apt-get install mariadb-server
+	mysql_secure_installation
+	mysql -u root -p
+		CREATE DATABASE stud;
+		exit;
+
+Creating a virtual environment for the project
+	virtualenv stud
+	source stud/bin/activate
+	pip install django
+	sudo apt-get install libmysqlclient-dev
+	pip install mysql-python
+	pip install python-dateutil
+	pip install pytz
+	cd stud
+	git clone https://github.com/krishraghuram/stud-webserver.git
+	mv stud-webserver stud
+	cd stud/
+	nano stud/settings.py
+		set ALLOWED_HOSTS to the ip of the system
+		set DATABASE OPTIONS
+	python manage.py makemigrations
+	python manage.py migrate
+	python manage.py createsuperuser
+		techsec
+		techsec@iitg.ernet.in
+		***************
+	python manage.py runserver 0.0.0.0:8000
+
+Apache Mod_WSGI
+Add "python manage.py checkmail" as a CRON job
+
