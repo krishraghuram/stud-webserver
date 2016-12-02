@@ -31,7 +31,7 @@ Creating a virtual environment for the project
 	pip install mysql-python
 	pip install python-dateutil
 	pip install pytz
-	cd stud
+	cd stud/
 	git clone https://github.com/krishraghuram/stud-webserver.git stud
 	cd stud/
 	nano stud/settings.py
