@@ -88,5 +88,11 @@ https://docs.djangoproject.com/en/1.10/howto/static-files/deployment/
 	If things still dont work, try this,
 		sudo chown :www-data ~/stud/stud/static/
 
-Add "python manage.py checkmail" as a CRON job
-	@hourly . stud/bin/activate && python /home/ubuntu/stud/stud/manage.py checkmail >> /home/ubuntu/cron.log 2>&1
+setting up checkmail job
+	Set up mail credentials
+		nano ~/stud/stud/chrono/management/commands/checkmail.py
+			set Command.host to mail server ip
+			set Command.username to mail id
+			set Command.password to mail password
+	Add "python manage.py checkmail" as a CRON job
+		@hourly . stud/bin/activate && python /home/ubuntu/stud/stud/manage.py checkmail >> /home/ubuntu/cron.log 2>&1
