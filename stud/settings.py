@@ -31,6 +31,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'tau.apps.TauConfig',
     'chrono.apps.ChronoConfig',
     'django.contrib.admin',
     'django.contrib.auth',
