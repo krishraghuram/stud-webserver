@@ -56,7 +56,7 @@ ROOT_URLCONF = 'stud.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'stud/templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -129,3 +129,6 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.10/howto/static-files/
 STATIC_URL = '/static/'
+LOGIN_URL = '/login/'
+LOGIN_REDIRECT_URL = '/tau/'
+MEDIA_ROOT = '/home/raghuram/Workspace/WebDevelopment/Django/stud/stud/media/'
