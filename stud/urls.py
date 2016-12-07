@@ -24,6 +24,6 @@ urlpatterns = [
     url(r'^login/$', auth_views.login, name='login'),
     url(r'^logout/$', auth_views.logout, name='logout'),
     url(r'^chrono/', include('chrono.urls')),
-    # url(r'^tau/', include('tau.urls')),
+    url(r'^tau/', include('tau.urls')),
     url(r'^admin/', admin.site.urls),
 ]

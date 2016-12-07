@@ -36,13 +36,12 @@ import shutil, os, errno
 
 
 class Drive(models.Model):
-	user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
+	user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 	space_used = models.PositiveIntegerField(editable=False, default=0)
 
 	def space_left(self):
 		#First make sure space_used is up to date
-		# self.space_used = sum([i.file.size for i in File.objects.filter(drive=self)])		
-		self.space_used = 0
+		self.space_used = sum([i.file.size for i in File.objects.filter(drive=self)])
 		#Return the space left
 		return (Constants.total_drive_space - self.space_used)
 
@@ -50,10 +49,11 @@ class Drive(models.Model):
 		return self.user
 
 	def __str__(self):
-		# space_used = sum([i.file.size for i in File.objects.filter(drive=self)])		
-		space_used = 0
+		space_used = sum([i.file.size for i in File.objects.filter(drive=self)])		
 		space_left = Constants.total_drive_space - space_used
-		return str(self.user)+"\nSpace Used in Drive : "+str(space_used)+"\nSpace Left in Drive : "+str(space_left)
+		space_used = '%.2f' % (float(space_used)/(1024*1024)) + "MiB"
+		space_left = '%.2f' % (float(space_left)/(1024*1024)) + "MiB"
+		return str(self.user)+" : space used = "+space_used+", space left = "+space_left
 
 
 
@@ -66,7 +66,7 @@ class Drive(models.Model):
 	#Sending Folder to another user should create a copy of the folder in given user's drive
 class Folder(models.Model):
 	drive = models.ForeignKey("Drive", models.CASCADE) 
-	parent = models.ForeignKey("Folder", models.CASCADE, null=True, blank=True) #If blank, folder has no parent. That is, its a root level folder.
+	parent = models.ForeignKey("Folder", models.CASCADE, null=True, blank=True) #Need null and blank to be true so that root folder can be "NULL"
 	name = models.CharField(max_length = 500)
 	path = models.TextField(editable=False) #Doesnt contain a trailing slash
 
@@ -143,24 +143,15 @@ def folder_save(sender, instance, **kwargs):
 
 #A callable upload_to for the FileField
 def upload_to(instance, filename):
-	#First, set instance.filename to the filename of the file that user is uploading
 	instance.name = filename
-	print filename
-	print instance.name
-	# #Now, return the path(including filename) to upload the file(relative to MEDIA_ROOT)
-	# User = get_user_model()
-	# username = instance.drive.get_user().__dict__[User.USERNAME_FIELD] #Need to do this the roundabout way to make sure that this works with CUSTOM USER MODELS. Else, we could have simply went for self.user.username
-	# return "tau/"+username+"/"+instance.path+instance.filename
-	return os.path.join(instance.parent.get_full_path(),instance.name)
+	print "Filename : ",filename 
+	return os.path.join(instance.parent.get_full_path(),filename)
 
 class File(models.Model):
 	drive = models.ForeignKey("Drive", models.PROTECT) #Protects Drive from being deleted when files exist
-	parent = models.ForeignKey("Folder", models.CASCADE)
-	name = models.CharField(max_length=500, editable=False)
-	##### The method below is simpler and preferrable, but doesnt work.
-	##### Because we cant convert the TextField and CharField into str
-	##### file = models.FileField(upload_to=str(path)+str(filename))	
+	parent = models.ForeignKey("Folder", models.CASCADE) #Parent cant be null or blank, so files cant be in root folder. They should be inside a folder. 
 	file = models.FileField(upload_to=upload_to)
+	name = models.CharField(max_length=500, editable=False)
 
 	def clean(self):
 		#name is only allowed to have a-z, A-Z, 0-9 and - _ .
@@ -179,7 +170,7 @@ class File(models.Model):
 			raise ValidationError(str(self.drive.get_user())+"\'s Drive Space Limit Reached.")
 
 	def save(self, *args, **kwargs):
-		#Sanitize the name, as well as validate for remaining space on drive
+		#Validate for remaining space on drive
 		self.full_clean()
 
 		#In case user changes the uploaded file,
@@ -197,7 +188,17 @@ class File(models.Model):
 		return "\n"+os.path.join(self.parent.get_path(),self.name)
 
 #Make sure file is deleted from filesystem when File Model object is deleted from database
+#Make sure drive space is recalculated and then saved
 @receiver(post_delete, sender=File)
 def file_delete(sender, instance, **kwargs):
     # Pass false so FileField doesn't save the model.
     instance.file.delete(save=False)
+    instance.drive.space_left()
+    instance.drive.save()
+
+#Make sure drive space is recalculated and then saved
+@receiver(post_save, sender=File)
+def file_save(sender, instance, **kwargs):
+	instance.drive.space_left()
+	instance.drive.save()
+
