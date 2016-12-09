@@ -17,12 +17,14 @@ from django.conf.urls import url, include
 from django.contrib import admin
 #For now, we use predefined login views. Later, we will have a custom login app with custon User model and custom Auth Backend
 from django.contrib.auth import views as auth_views
+from .views import StudView
 
 urlpatterns = [
 	#For now, we use default auth mechanism. 
 	#Later, we will have custom login app with custom user model and custom auth backend(webmail based)
     url(r'^login/$', auth_views.login, name='login'),
     url(r'^logout/$', auth_views.logout, name='logout'),
+    url(r'^$', StudView, name='stud'), #Stud Main Page
     url(r'^chrono/', include('chrono.urls')),
     url(r'^tau/', include('tau.urls')),
     url(r'^admin/', admin.site.urls),

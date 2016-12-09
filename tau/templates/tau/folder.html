@@ -1,0 +1,119 @@
+{% extends "tau/base.html" %}
+
+{% block title %}Folder{% endblock %}
+
+<!-- {% load static %} -->
+{% block css %}{% endblock %}
+
+{% block js %}
+<script type="text/javascript">
+// var FolderView = '{% url "FolderView" %}'
+// var csrftoken = '{{ csrf_token }}'
+</script>
+<script type="text/javascript">
+// jQuery(document).ready(function(){
+// 	jQuery("#breadcrumb-element").click(function() {
+// 		console.log("HelloWorld");
+// 		var j = jQuery("breadcrumb-element").attr("data-url");
+// 		jQuery.post(
+// 			FolderView,
+// 			{url : j, csrfmiddlewaretoken : csrftoken},
+// 			function(data){
+// 				jQuery(document).html(data)
+// 			}
+// 		);
+// 	});
+// })
+function breadcrumb_click(){
+	jQuery("breadcrumb-form").submit()
+}
+</script>
+{% endblock %}
+
+{% block content %}
+
+
+	<div class="container">
+
+	  <div class="starter-template">
+		<!-- Put Path as Breadcrumbs -->
+		<ul class="list-inline">
+			{% for folder,path in path.items %}
+					<li>
+						<form action="{% url 'FolderView' %}" method='post'>{% csrf_token %}
+							<input type="hidden" name="path" value="{{path}}">
+							<button type="submit" class="btn btn-default btn-lg" >
+								{{folder}}
+							</button>
+						</form>
+					</li>
+			{% endfor %}
+		</ul>
+		<!-- <h1>{{ path }}</h1> -->
+		<ul class="list-inline">
+			<div class="row jumbotron">
+				{% for folder in folders %}
+					<li>
+						<div class="col-lg-2">
+							<!-- Add button action to open that folder's FolderView -->
+							<form action="{% url 'FolderView' %}" method='post'>{% csrf_token %}
+								<input type="hidden" name="path" value="{{folder.path}}">
+								<button type="submit" class="btn btn-default btn-lg btn-block">
+									<span class="glyphicon glyphicon-folder-close pull-left" ></span> 
+									{{ folder.name }}
+								</button>
+							</form>
+						</div>
+					</li>
+				{% endfor %}
+				{% for file in files %}
+					<li>
+						<div class="col-lg-2">
+							<!-- Form should goto file download.  -->
+							<!-- <form action="{% url 'FolderView' %}" method='post'>{% csrf_token %} -->
+								<input type="hidden" name="path" value="{{file.id}}">
+								<button type="submit" class="btn btn-default btn-lg btn-block">
+									<span class="glyphicon glyphicon-file pull-left" ></span> 
+									{{ file.name }}
+								</button>
+							<!-- </form> -->
+						</div>
+					</li>
+				{% endfor %}
+			</div>
+		</ul>
+	  </div>
+
+	</div><!-- /.container -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- 	
+	We will use Bootstrap Breadcrumbs for path later. 
+	<ol class="breadcrumb">
+	  <li><a href="#">Home</a></li>
+	  <li><a href="#">Library</a></li>
+	  <li class="active">Data</li>
+	</ol>
+-->
+
+
+{% endblock %}
+

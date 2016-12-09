@@ -1,0 +1,27 @@
+body {
+	font-family: Trebuchet MS;
+	margin: 0px;
+}
+.div{
+	width: 99vw; 
+	min-height: 100vh;
+	background-color: #efefef; 
+	border-radius: 5%; 
+	padding-top: 1%;
+}
+.heading {
+	text-align: center; 
+	background-color: #ffffff;
+	padding: 1%;
+	margin: 2%;
+}
+div.dateField {
+	text-align: center;
+	width: 15vw;
+	color: #000;
+	background-color: white;
+	margin-left: auto;
+	margin-right: auto;
+	margin-top: 1%;
+	margin-bottom: 1%;
+}

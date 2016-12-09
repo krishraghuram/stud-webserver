@@ -29,6 +29,8 @@ import shutil, os, errno
 		#This has to be done at apache level or nginx level.
 	#Before a file upload starts, a check will be made on user's space left
 		#This will be done on django level
+	#Maximum subfolders in any folder
+	#Maximum Folder Depth - Can be a field in folder model - Counted by no of slashes in the path
 	#If possible, work on something like chroot jail
 
 
@@ -67,7 +69,7 @@ class Drive(models.Model):
 class Folder(models.Model):
 	drive = models.ForeignKey("Drive", models.CASCADE) 
 	parent = models.ForeignKey("Folder", models.CASCADE, null=True, blank=True) #Need null and blank to be true so that root folder can be "NULL"
-	name = models.CharField(max_length = 500)
+	name = models.CharField(max_length = 100)
 	path = models.TextField(editable=False) #Doesnt contain a trailing slash
 
 	def update_path(self):
@@ -76,7 +78,6 @@ class Folder(models.Model):
 			self.path = os.path.join(self.parent.path, self.name)
 		else:
 			self.path = self.name
-		print "Path : ",self.path
 
 	def get_path(self):
 		return self.path
@@ -84,24 +85,34 @@ class Folder(models.Model):
 	def get_full_path(self):
 		User = get_user_model()
 		full_path = os.path.join(settings.MEDIA_ROOT, "tau", self.drive.get_user().__dict__[User.USERNAME_FIELD], self.path)
-		print "Full Path : ",full_path
 		return full_path
 
+	def clean(self):
+		#Update Path
+		self.update_path()
+
+		#Check for max subfolders in a folder
+		subfolders = Folder.objects.filter(parent = self.parent)
+		print len(subfolders)
+		if len(subfolders)+1>Constants.max_subfolders:
+			raise ValidationError("Max Subfolders in any folder is "+str(Constants.max_subfolders))
+
+		#Check for max folder depth
+		path_depth = len(os.path.normpath(self.path).split(os.sep))
+		if path_depth>Constants.max_folder_depth:
+			raise ValidationError("Maximum Folder Depth Allowed is "+str(Constants.max_folder_depth))
+		
+
 	def save(self, *args, **kwargs):
-		print "name : ",self.name
-		print "drive : ",self.drive
-		print "parent : ",self.parent
+		#Validate for remaining space on drive
+		self.full_clean()
+
+		#Make sure path is updated before saving
 		self.update_path()
 
 		#Check if user has made changes
 		try:
 			this = Folder.objects.get(id=self.id) #Get the Folder Model object from database				
-			# print "names"
-			# print this.name
-			# print self.name
-			# print "parents"
-			# print this.parent
-			# print self.parent
 			if this.name != self.name: #User has renamed folder
 				if (os.path.isdir(self.get_full_path()) or os.path.isfile(self.get_full_path())):
 					raise OSError(errno.EEXIST, self.get_path() + " Already Exists")			
@@ -118,7 +129,6 @@ class Folder(models.Model):
 		return super(Folder, self).save(*args, **kwargs)
 
 	def __str__(self):
-		print "In Folder.str"
 		self.update_path()
 		return self.path
 
@@ -144,7 +154,6 @@ def folder_save(sender, instance, **kwargs):
 #A callable upload_to for the FileField
 def upload_to(instance, filename):
 	instance.name = filename
-	print "Filename : ",filename 
 	return os.path.join(instance.parent.get_full_path(),filename)
 
 class File(models.Model):

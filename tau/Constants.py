@@ -2,3 +2,5 @@
 
 # total_drive_space = 268435456 #250 MibiBytes = 250*1024*1024 Bytes
 total_drive_space = 1024*1024*5
+max_subfolders = 4
+max_folder_depth = 5
