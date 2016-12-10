@@ -8,13 +8,11 @@
 
 {% block content %}
     <div class="container" style="padding-top:50px; text-align:center;">
-        <div class="starter-template">
-            <h1>Welcome {{request.user.get_short_name}}</h1>
-            <h2>This is Tau, The IIT Guwahati Local Drive</h2>
-            <!-- Add view to create drive and set url here -->
-            <button type="button" class="btn btn-default btn-lg" action="">
-                Create my drive
-            </button>
-        </div>
+        <h1>Welcome {{request.user.get_short_name}}</h1>
+        <h2>This is Tau, The IIT Guwahati Local Drive</h2>
+        <!-- Add view to create drive and set its url here -->
+        <button type="button" class="btn btn-default btn-lg" action="">
+            Create my drive
+        </button>
     </div>
 {% endblock %}

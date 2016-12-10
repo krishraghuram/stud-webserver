@@ -2,7 +2,7 @@
 
 {% block title %}Folder{% endblock %}
 
-<!-- {% load static %} -->
+{% load static %}
 {% block css %}
 <link rel="stylesheet" href="{% static 'tau/stylesheets/dropzone.css' %}">
 <style type="text/css">
@@ -19,39 +19,31 @@ border:medium dashed #000;
 <script src="{% static 'tau/javascripts/dropzone.js' %}"></script>
 <script type="text/javascript">
 // "upload" is the camelized version of the HTML element's ID
-Dropzone.options.upload = {
+Dropzone.options.uploadzone = {
 	paramName: "file", // The name that will be used to transfer the file
 	maxFilesize: 25, // MB
 	uploadMultiple: false, //Only one file will get uploaded
-	init : function(){ this.on("addedfile", function(){console.log("Yo");jQuery("#form").submit();}) }
 };
 </script>
 {% endblock %}
 
 {% block content %}
-
-
 	<div class="container">
-		<!-- Used for Reference -->
+		<!-- Used for Reference and Testing -->
 		<h1 style="display:none;">{{path}}</h1> 
 
 		<!-- Breadcrumbs -->
 		<ul class="list-inline">
-					<li>
-						<form action="{% url 'FolderView' %}" method='post'>{% csrf_token %}
-							<button type="submit" class="btn btn-default btn-lg" >
-								Drive
-							</button>
-						</form>
-					</li>				
+			<li>
+				<a href="{% url 'FolderView' drive_home %}" class="btn btn-default btn-lg" >
+					Drive
+				</a>
+			</li>				
 			{% for folder,path in path_dict.items %}
 					<li>
-						<form action="{% url 'FolderView' %}" method='post'>{% csrf_token %}
-							<input type="hidden" name="path" value="{{path}}">
-							<button type="submit" class="btn btn-default btn-lg" >
-								{{folder}}
-							</button>
-						</form>
+						<a href="{% url 'FolderView' path %}" class="btn btn-default btn-lg" >
+							{{folder}}
+						</a>
 					</li>
 			{% endfor %}
 		</ul>
@@ -60,14 +52,11 @@ Dropzone.options.upload = {
 		<div class="page-header"></div>
 
 		<!-- Dropzone -->
-		<form id="upload" class="dropzone" action="{% url 'UploadView' %}" enctype="multipart/form-data">{% csrf_token %}
-			<!-- <h4 style="text-align:center;">Drop Your Files Here</h4> -->
+		<!-- Change Action to UploadView -->
+		<!-- IF ACTION IS EMPTY DROPZONE DOESNT WORK -->
+		<form id="uploadzone" class="dropzone" action="some-url" enctype="multipart/form-data">{% csrf_token %}
 			<input type="hidden" name="path" value="{{path}}">
-			<!-- <button type="submit" class="btn btn-default btn-lg col-xs-offset-0 col-sm-offset-0 col-md-offset-5 col-lg-offset-5 col-xs-12 col-sm-12 col-md-2 col-lg-2" style="">Upload</button>  -->
 		</form>
-<!-- 		<form class="dropzone" action="{% url 'FolderView' %}" id="my-awesome-dropzone">
-			<button type="submit">ASD</button>
-		</form> -->
 
 		<!-- Folders and Files -->
 		<ul class="list-inline">
@@ -75,28 +64,22 @@ Dropzone.options.upload = {
 				{% for folder in folders %}
 					<li>
 						<div class="col-lg-2">
-							<!-- Add button action to open that folder's FolderView -->
-							<form action="{% url 'FolderView' %}" method='post'>{% csrf_token %}
-								<input type="hidden" name="path" value="{{folder.path}}">
-								<button type="submit" class="btn btn-default btn-lg btn-block">
-									<span class="glyphicon glyphicon-folder-close pull-left" ></span> 
-									{{ folder.name }}
-								</button>
-							</form>
+							<a href="{% url 'FolderView' folder.path %}" class="btn btn-default btn-lg btn-block">
+								<span class="glyphicon glyphicon-folder-close pull-left" ></span> 
+								{{ folder.name }}
+							</a>
 						</div>
 					</li>
 				{% endfor %}
 				{% for file in files %}
 					<li>
 						<div class="col-lg-2">
-							<!-- Form should goto file download.  -->
-							<!-- <form action="{% url 'FolderView' %}" method='post'>{% csrf_token %} -->
-								<input type="hidden" name="path" value="{{file.id}}">
-								<button type="submit" class="btn btn-default btn-lg btn-block">
-									<span class="glyphicon glyphicon-file pull-left" ></span> 
-									{{ file.name }}
-								</button>
-							<!-- </form> -->
+							<!-- a href should be set to file download view -->
+							<a href="#" class="btn btn-default btn-lg btn-block">
+								<span class="glyphicon glyphicon-file pull-left" ></span> 
+								{{ file.name }}
+							</a>
+
 						</div>
 					</li>
 				{% endfor %}
@@ -104,35 +87,5 @@ Dropzone.options.upload = {
 		</ul>
 	
 	</div><!-- /.container -->
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<!-- 	
-	We will use Bootstrap Breadcrumbs for path later. 
-	<ol class="breadcrumb">
-	  <li><a href="#">Home</a></li>
-	  <li><a href="#">Library</a></li>
-	  <li class="active">Data</li>
-	</ol>
--->
-
-
 {% endblock %}
 

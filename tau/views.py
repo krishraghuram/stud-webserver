@@ -2,18 +2,12 @@ from django.shortcuts import render
 
 # Create your views here.
 
-from django.db.models import Model
 from .models import Drive, Folder, File
 from django.views.generic.list import ListView
-from django.shortcuts import render
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
 import os
 from collections import OrderedDict
-import re
-from forms import FileForm
-from django.views.generic.base import TemplateView
-from django.urls import reverse
 
 #Splits path into components
 def split_path(path):
@@ -24,11 +18,17 @@ def split_path(path):
 @method_decorator(login_required, name="dispatch")
 class FolderView(ListView):
 	template_name = "tau/folder.html"
-	queryset = Drive.objects.none()
-	#If user send a GET, we will show him Root Folder.
-	#If user sends a POST, we will look for "path", and show him that folder.
+	queryset = Drive.objects.none() #Just to keep django happy
+	path = None
 
 	def get(self, request, *args, **kwargs):
+		if args[0]=='':
+			self.path=None
+		else:
+			self.path=args[0]
+			if self.path[-1]=='/':
+				self.path = self.path[:-1]
+
 		if hasattr(request.user, 'drive'): #User has a drive
 			pass			
 		else: #User doesnt have a drive
@@ -39,20 +39,13 @@ class FolderView(ListView):
 			self.template_name = "tau/welcome.html"
 
 		return super(FolderView, self).get(request, *args, **kwargs)
-
-	def post(self, request, *args, **kwargs):
-		return super(FolderView, self).get(request, *args, **kwargs)
 	
 	def get_context_data(self, **kwargs):
 		#Get the base's context
 		context = super(FolderView, self).get_context_data(**kwargs)
 		
 		#Get the path
-		path = None
-		if self.request.method == 'GET':
-		    pass
-		elif self.request.method == 'POST':
-		    path = self.request.POST.get('path')
+		path = self.path
 
 		#Get the folders and files in that path
 		folders = Folder.objects.filter(drive=self.request.user.drive, parent__path=path).order_by('name')
@@ -67,31 +60,14 @@ class FolderView(ListView):
 			context["path_dict"] = path_dict
 		context["folders"] = folders
 		context["files"] = files
+		context["drive_home"] = ''
 
 		#TEST CODE
 		# print "Path : ",path
+		# print "Folders : ",folders.values()
+		# print "Path_Dicr :", path_dict
 		# for i in path_dict:
 		# 	print i,path_dict[i]
 		# print context
 
 		return context
-
-
-
-
-#Upload a file or a folder
-@method_decorator(login_required, name="dispatch")
-class UploadView(TemplateView):
-	def post(self, request, *args, **kwargs):
-		form = FileForm(request.POST, request.FILES)
-		if form.is_valid():
-			print "YOO : ",form.cleaned_data['path']
-			parent = Folder.objects.get(path=form.cleaned_data['path'])
-			file = File(drive=request.user.drive, parent=parent, file=request.FILE['file'])
-			file.save()
-
-		#In HTTP, Redirect cannot pass on the POST data.
-		#This is a HTTP thing, so django cant do anything.
-		#Have to redesign so that path is part of django url conf
-		return HttpResponseRedirect(reverse('FolderView'))
-
