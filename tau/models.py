@@ -114,12 +114,12 @@ class Folder(models.Model):
 		try:
 			this = Folder.objects.get(id=self.id) #Get the Folder Model object from database				
 			if this.name != self.name: #User has renamed folder
-				if (os.path.isdir(self.get_full_path()) or os.path.isfile(self.get_full_path())):
+				if (os.path.isdir(self.get_full_path()) or os.path.isfile(self.get_full_path())): #Folder Already Exists in Filesystem
 					raise OSError(errno.EEXIST, self.get_path() + " Already Exists")			
 				else:
 					os.rename(this.get_full_path(), self.get_full_path())
 			elif this.parent != self.parent: #User has moved folder
-				if (os.path.isdir(self.get_full_path()) or os.path.isfile(self.get_full_path())):
+				if (os.path.isdir(self.get_full_path()) or os.path.isfile(self.get_full_path())): #Folder Already Exists in Filesystem
 					raise OSError(errno.EEXIST, self.get_path() + " Already Exists")			
 				else:
 					shutil.move(this.get_full_path(), self.get_full_path())

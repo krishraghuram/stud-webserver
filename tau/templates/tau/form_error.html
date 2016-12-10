@@ -1,0 +1,18 @@
+{% extends "tau/base.html" %}
+
+{% block title %}Tau{% endblock %}
+
+{% block css %}{% endblock %}
+
+{% block js %}
+<script type="text/javascript">
+    jQuery(document).ready(){function(){console.log("In form-error");}}
+</script>
+{% endblock %}
+
+{% block content %}
+    <div class="container" style="padding-top:50px; text-align:center;">
+        <div class="starter-template">
+            <h2>{{form}}</h2>
+    </div>
+{% endblock %}

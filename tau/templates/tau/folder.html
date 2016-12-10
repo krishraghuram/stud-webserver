@@ -1,4 +1,4 @@
-{% extends "tau/base.html" %}
+	{% extends "tau/base.html" %}
 
 {% block title %}Folder{% endblock %}
 
@@ -23,7 +23,7 @@ Dropzone.options.upload = {
 	paramName: "file", // The name that will be used to transfer the file
 	maxFilesize: 25, // MB
 	uploadMultiple: false, //Only one file will get uploaded
-	init : function(){ this.on("addedfile", function(){console.log("Yo");jQuery("#form").submit();}) }
+	init : function(){ this.on("addedfile", function(){jQuery("#upload").submit();}) }
 };
 </script>
 {% endblock %}
@@ -60,14 +60,10 @@ Dropzone.options.upload = {
 		<div class="page-header"></div>
 
 		<!-- Dropzone -->
-		<form id="upload" class="dropzone" action="{% url 'UploadView' %}" enctype="multipart/form-data">{% csrf_token %}
-			<!-- <h4 style="text-align:center;">Drop Your Files Here</h4> -->
-			<input type="hidden" name="path" value="{{path}}">
+		<form id="upload" class="dropzone" action="{% url 'FolderView' %}" method="post" enctype="multipart/form-data">{% csrf_token %}
 			<!-- <button type="submit" class="btn btn-default btn-lg col-xs-offset-0 col-sm-offset-0 col-md-offset-5 col-lg-offset-5 col-xs-12 col-sm-12 col-md-2 col-lg-2" style="">Upload</button>  -->
+			<input type="hidden" name="path" value="{{path}}">
 		</form>
-<!-- 		<form class="dropzone" action="{% url 'FolderView' %}" id="my-awesome-dropzone">
-			<button type="submit">ASD</button>
-		</form> -->
 
 		<!-- Folders and Files -->
 		<ul class="list-inline">

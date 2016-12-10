@@ -14,6 +14,8 @@ import re
 from forms import FileForm
 from django.views.generic.base import TemplateView
 from django.urls import reverse
+from django.http import HttpResponseRedirect, HttpResponse
+from django.template import loader
 
 #Splits path into components
 def split_path(path):
@@ -41,7 +43,35 @@ class FolderView(ListView):
 		return super(FolderView, self).get(request, *args, **kwargs)
 
 	def post(self, request, *args, **kwargs):
+		# if request.FILES:
+		# 	form = FileForm(request.POST, request.FILES)
+		# 	print "Cleaned Form Data : ",request.POST['path']
+		# 	parent = Folder.objects.get(path=request.POST['path'])
+		# 	print parent
+		# 	file = File(drive=request.user.drive, parent=parent, file=request.FILES['file'])
+		# 	file.save()
+		if request.FILES:
+			form = FileForm(request.POST, request.FILES)
+			if form.is_valid():
+				print "Cleaned Form Data : ",form.cleaned_data['path']
+				parent = Folder.objects.get(path=form.cleaned_data['path'])
+				print parent
+				file = File(drive=request.user.drive, parent=parent, file=request.FILES['file'])
+				file.save()
+			else:
+				print "RAISE"
+				self.template_name = "tau/form_error.html"
+				# print render(self.request, self.template_name)
+				# template = loader.get_template(template_name)
+				# context = {'form':form}
+				# return HttpResponse(template.render(context,request))
+				return render(self.request, self.template_name, {"form":form})
+
 		return super(FolderView, self).get(request, *args, **kwargs)
+
+
+		
+
 	
 	def get_context_data(self, **kwargs):
 		#Get the base's context
@@ -72,7 +102,7 @@ class FolderView(ListView):
 		# print "Path : ",path
 		# for i in path_dict:
 		# 	print i,path_dict[i]
-		# print context
+		print "Context : ",context
 
 		return context
 
@@ -80,18 +110,15 @@ class FolderView(ListView):
 
 
 #Upload a file or a folder
-@method_decorator(login_required, name="dispatch")
-class UploadView(TemplateView):
-	def post(self, request, *args, **kwargs):
-		form = FileForm(request.POST, request.FILES)
-		if form.is_valid():
-			print "YOO : ",form.cleaned_data['path']
-			parent = Folder.objects.get(path=form.cleaned_data['path'])
-			file = File(drive=request.user.drive, parent=parent, file=request.FILE['file'])
-			file.save()
+# @method_decorator(login_required, name="dispatch")
+# class UploadView(TemplateView):
+# 	def post(self, request, *args, **kwargs):
+# 		form = FileForm(request.POST, request.FILES)
+# 		if form.is_valid():
+# 			print "YOO : ",form.cleaned_data['path']
+# 			parent = Folder.objects.get(path=form.cleaned_data['path'])
+# 			file = File(drive=request.user.drive, parent=parent, file=request.FILE['file'])
+# 			file.save()
 
-		#In HTTP, Redirect cannot pass on the POST data.
-		#This is a HTTP thing, so django cant do anything.
-		#Have to redesign so that path is part of django url conf
-		return HttpResponseRedirect(reverse('FolderView'))
+# 		return HttpResponse(reverse('FolderView'))
 
