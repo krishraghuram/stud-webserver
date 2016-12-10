@@ -160,7 +160,7 @@ class File(models.Model):
 	drive = models.ForeignKey("Drive", models.PROTECT) #Protects Drive from being deleted when files exist
 	parent = models.ForeignKey("Folder", models.CASCADE) #Parent cant be null or blank, so files cant be in root folder. They should be inside a folder. 
 	file = models.FileField(upload_to=upload_to)
-	name = models.CharField(max_length=500, editable=False)
+	name = models.CharField(max_length=100, editable=False)
 
 	def clean(self):
 		#name is only allowed to have a-z, A-Z, 0-9 and - _ .

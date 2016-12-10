@@ -11,6 +11,9 @@ from django.contrib.auth.decorators import login_required
 import os
 from collections import OrderedDict
 import re
+from forms import FileForm
+from django.views.generic.base import TemplateView
+from django.urls import reverse
 
 #Splits path into components
 def split_path(path):
@@ -51,29 +54,17 @@ class FolderView(ListView):
 		elif self.request.method == 'POST':
 		    path = self.request.POST.get('path')
 
-		try:
-			if path=="Drive":
-				path = None
-			elif path.startswith("Drive"):
-				path = path[len("Drive")+1:]
-		except AttributeError as e: #Arises during GET requests
-			pass
-
 		#Get the folders and files in that path
 		folders = Folder.objects.filter(drive=self.request.user.drive, parent__path=path).order_by('name')
-		# folders = Folder.objects.all()
 		files = File.objects.filter(drive=self.request.user.drive, parent__path=path).order_by('name')
 
-		#Add path, folders and files to context
-		if path is None:
-			path = "Drive"
-		else:
-			path = os.path.join("Drive",path)
-		path = split_path(path)
-		path_dict = OrderedDict()
-		for i in range(len(path)):
-			path_dict[path[i]] = '/'.join(path[:i+1]) 
-		context["path"] = path_dict
+		if path is not None:
+			path = split_path(path)
+			path_dict = OrderedDict()
+			for i in range(len(path)):
+				path_dict[path[i]] = '/'.join(path[:i+1]) 
+			context["path"] = "/".join(path)
+			context["path_dict"] = path_dict
 		context["folders"] = folders
 		context["files"] = files
 
@@ -84,3 +75,23 @@ class FolderView(ListView):
 		# print context
 
 		return context
+
+
+
+
+#Upload a file or a folder
+@method_decorator(login_required, name="dispatch")
+class UploadView(TemplateView):
+	def post(self, request, *args, **kwargs):
+		form = FileForm(request.POST, request.FILES)
+		if form.is_valid():
+			print "YOO : ",form.cleaned_data['path']
+			parent = Folder.objects.get(path=form.cleaned_data['path'])
+			file = File(drive=request.user.drive, parent=parent, file=request.FILE['file'])
+			file.save()
+
+		#In HTTP, Redirect cannot pass on the POST data.
+		#This is a HTTP thing, so django cant do anything.
+		#Have to redesign so that path is part of django url conf
+		return HttpResponseRedirect(reverse('FolderView'))
+

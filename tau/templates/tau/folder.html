@@ -3,30 +3,28 @@
 {% block title %}Folder{% endblock %}
 
 <!-- {% load static %} -->
-{% block css %}{% endblock %}
+{% block css %}
+<link rel="stylesheet" href="{% static 'tau/stylesheets/dropzone.css' %}">
+<style type="text/css">
+.dropzone{
+border-top-left-radius:50px; border-top-right-radius:50px; 
+margin-bottom:0px; 
+background-color:#ccc; 
+border:medium dashed #000;
+}
+</style>
+{% endblock %}
 
 {% block js %}
+<script src="{% static 'tau/javascripts/dropzone.js' %}"></script>
 <script type="text/javascript">
-// var FolderView = '{% url "FolderView" %}'
-// var csrftoken = '{{ csrf_token }}'
-</script>
-<script type="text/javascript">
-// jQuery(document).ready(function(){
-// 	jQuery("#breadcrumb-element").click(function() {
-// 		console.log("HelloWorld");
-// 		var j = jQuery("breadcrumb-element").attr("data-url");
-// 		jQuery.post(
-// 			FolderView,
-// 			{url : j, csrfmiddlewaretoken : csrftoken},
-// 			function(data){
-// 				jQuery(document).html(data)
-// 			}
-// 		);
-// 	});
-// })
-function breadcrumb_click(){
-	jQuery("breadcrumb-form").submit()
-}
+// "upload" is the camelized version of the HTML element's ID
+Dropzone.options.upload = {
+	paramName: "file", // The name that will be used to transfer the file
+	maxFilesize: 25, // MB
+	uploadMultiple: false, //Only one file will get uploaded
+	init : function(){ this.on("addedfile", function(){console.log("Yo");jQuery("#form").submit();}) }
+};
 </script>
 {% endblock %}
 
@@ -34,11 +32,19 @@ function breadcrumb_click(){
 
 
 	<div class="container">
+		<!-- Used for Reference -->
+		<h1 style="display:none;">{{path}}</h1> 
 
-	  <div class="starter-template">
-		<!-- Put Path as Breadcrumbs -->
+		<!-- Breadcrumbs -->
 		<ul class="list-inline">
-			{% for folder,path in path.items %}
+					<li>
+						<form action="{% url 'FolderView' %}" method='post'>{% csrf_token %}
+							<button type="submit" class="btn btn-default btn-lg" >
+								Drive
+							</button>
+						</form>
+					</li>				
+			{% for folder,path in path_dict.items %}
 					<li>
 						<form action="{% url 'FolderView' %}" method='post'>{% csrf_token %}
 							<input type="hidden" name="path" value="{{path}}">
@@ -49,9 +55,23 @@ function breadcrumb_click(){
 					</li>
 			{% endfor %}
 		</ul>
-		<!-- <h1>{{ path }}</h1> -->
+	
+		<!-- Divider -->
+		<div class="page-header"></div>
+
+		<!-- Dropzone -->
+		<form id="upload" class="dropzone" action="{% url 'UploadView' %}" enctype="multipart/form-data">{% csrf_token %}
+			<!-- <h4 style="text-align:center;">Drop Your Files Here</h4> -->
+			<input type="hidden" name="path" value="{{path}}">
+			<!-- <button type="submit" class="btn btn-default btn-lg col-xs-offset-0 col-sm-offset-0 col-md-offset-5 col-lg-offset-5 col-xs-12 col-sm-12 col-md-2 col-lg-2" style="">Upload</button>  -->
+		</form>
+<!-- 		<form class="dropzone" action="{% url 'FolderView' %}" id="my-awesome-dropzone">
+			<button type="submit">ASD</button>
+		</form> -->
+
+		<!-- Folders and Files -->
 		<ul class="list-inline">
-			<div class="row jumbotron">
+			<div class="row jumbotron" style="background-color:#555">
 				{% for folder in folders %}
 					<li>
 						<div class="col-lg-2">
@@ -82,8 +102,7 @@ function breadcrumb_click(){
 				{% endfor %}
 			</div>
 		</ul>
-	  </div>
-
+	
 	</div><!-- /.container -->
 
 
