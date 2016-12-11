@@ -1,0 +1,13 @@
+.dropzone{
+border-top-left-radius:50px; border-top-right-radius:50px; 
+margin-bottom:0px; 
+background-color:#ccc; 
+border:medium dashed #000;
+}
+.text-overflow-hidden{
+	white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+    max-width: 100%;
+}

@@ -88,7 +88,7 @@ class FileView(View):
 			try:
 				file_id = request.GET['file_id']
 				file = File.objects.get(pk=file_id)
-				return HttpResponseRedirect(settings.MEDIA_URL+"tau/techsec/1/File.pdf")
+				return HttpResponseRedirect(file.get_url_path())
 			except File.DoesNotExist:
 				error = "The Requested File Does Not Exist"
 				return HttpResponseRedirect(reverse('ErrorView', kwargs={'error':error}))

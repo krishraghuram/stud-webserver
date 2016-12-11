@@ -82,6 +82,11 @@ class Folder(models.Model):
 	def get_path(self):
 		return self.path
 
+	def get_url_path(self):
+		User = get_user_model()
+		full_path = os.path.join(settings.MEDIA_URL, "tau", self.drive.get_user().__dict__[User.USERNAME_FIELD], self.path)
+		return full_path
+
 	def get_full_path(self):
 		User = get_user_model()
 		full_path = os.path.join(settings.MEDIA_ROOT, "tau", self.drive.get_user().__dict__[User.USERNAME_FIELD], self.path)
@@ -135,13 +140,13 @@ class Folder(models.Model):
 
 #Make sure folder is deleted from filesystem when Folder Model object is deleted from database
 @receiver(post_delete, sender=Folder)
-def folder_delete(sender, instance, **kwargs):
+def folder_post_delete(sender, instance, **kwargs):
 	#Since its post_delete, the files should have been deleted from filesystem
 	os.rmdir(instance.get_full_path())
 
 #Make sure subfolders are saved after a folder is modified and saved
 @receiver(post_save, sender=Folder)
-def folder_save(sender, instance, **kwargs):
+def folder_post_save(sender, instance, **kwargs):
 	subfolders = Folder.objects.filter(parent=instance)
 	for i in subfolders:
 		if i.path != os.path.join(instance.path,i.name):
@@ -153,18 +158,24 @@ def folder_save(sender, instance, **kwargs):
 
 #A callable upload_to for the FileField
 def upload_to(instance, filename):
-	instance.name = filename
+	print "Upload_to Starting"
+	#Dont bother doing this, since django might anyway destroy the filename in get_available_name, which will lead to inconsistencies between database and filesystem
+	#instance.name = filename
+	#Instead, we get instance.name in post_save and save object to database again
+	#This does mean that every object is written to database twice, but thats ok.
 	return os.path.join(instance.parent.get_full_path(),filename)
 
 class File(models.Model):
 	drive = models.ForeignKey("Drive", models.PROTECT) #Protects Drive from being deleted when files exist
 	parent = models.ForeignKey("Folder", models.CASCADE) #Parent cant be null or blank, so files cant be in root folder. They should be inside a folder. 
 	file = models.FileField(upload_to=upload_to)
-	name = models.CharField(max_length=100, editable=False)
+	name = models.CharField(max_length=100, editable=False, blank=True)
+
+	def get_url_path(self):
+		return os.path.join(self.parent.get_url_path(),self.name)
 
 	def clean(self):
-		#name is only allowed to have a-z, A-Z, 0-9 and - _ .
-		self.name = "".join(re.findall('[0-9,a-z,A-Z,\.,_,-]',self.name))
+		print "Clean Starting"
 
 		#Limit File Size to 25Mibi Bytes
 		#This needs to be done at apache or nginx level.
@@ -179,8 +190,11 @@ class File(models.Model):
 			raise ValidationError(str(self.drive.get_user())+"\'s Drive Space Limit Reached.")
 
 	def save(self, *args, **kwargs):
+		print "Save starting"
 		#Validate for remaining space on drive
 		self.full_clean()
+		print "In Save, full clean done"
+
 
 		#In case user changes the uploaded file,
 		#Make sure the old file is deleted from filesystem
@@ -199,15 +213,19 @@ class File(models.Model):
 #Make sure file is deleted from filesystem when File Model object is deleted from database
 #Make sure drive space is recalculated and then saved
 @receiver(post_delete, sender=File)
-def file_delete(sender, instance, **kwargs):
+def file_post_delete(sender, instance, **kwargs):
     # Pass false so FileField doesn't save the model.
     instance.file.delete(save=False)
     instance.drive.space_left()
     instance.drive.save()
 
 #Make sure drive space is recalculated and then saved
+#If they are different, Get the actual filename from FieldFile object and save it in Model File.name
 @receiver(post_save, sender=File)
-def file_save(sender, instance, **kwargs):
+def file_post_save(sender, instance, **kwargs):
 	instance.drive.space_left()
 	instance.drive.save()
+	if instance.name != os.path.basename(instance.file.name): #If is necessary to avoid infinite loop
+		instance.name = os.path.basename(instance.file.name)
+		instance.save()
 

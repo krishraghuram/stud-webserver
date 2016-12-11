@@ -5,14 +5,7 @@
 {% load static %}
 {% block css %}
 <link rel="stylesheet" href="{% static 'tau/stylesheets/dropzone.css' %}">
-<style type="text/css">
-.dropzone{
-border-top-left-radius:50px; border-top-right-radius:50px; 
-margin-bottom:0px; 
-background-color:#ccc; 
-border:medium dashed #000;
-}
-</style>
+<link rel="stylesheet" href="{% static 'tau/stylesheets/folder.css' %}">
 {% endblock %}
 
 {% block js %}
@@ -66,18 +59,18 @@ Dropzone.options.uploadzone = {
 						<div class="col-lg-2">
 							<a href="{% url 'FolderView' folder.path %}" class="btn btn-default btn-lg btn-block">
 								<span class="glyphicon glyphicon-folder-close pull-left" ></span> 
-								{{ folder.name }}
+								<span class="text-overflow-hidden">{{ folder.name }}</span>
 							</a>
 						</div>
 					</li>
 				{% endfor %}
 				{% for file in files %}
 					<li>
-						<div class="col-lg-2">
+						<div class="col-lg-2 ">
 							<!-- a href should be set to file download view -->
 							<a href="{% url 'FileView' %}?file_id={{file.id}}" class="btn btn-default btn-lg btn-block">
 								<span class="glyphicon glyphicon-file pull-left" ></span> 
-								{{ file.name}}
+								<span class="text-overflow-hidden">{{ file.name }}</span>
 							</a>
 
 						</div>
