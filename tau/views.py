@@ -8,11 +8,19 @@ from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
 import os
 from collections import OrderedDict
+from django.http import HttpResponse, HttpResponseRedirect
+from django.urls import reverse
+from django.views import View
+from django.views.generic.base import TemplateView
+from django.conf import settings
+from django.core.exceptions import *
+
 
 #Splits path into components
 def split_path(path):
 	path = os.path.normpath(path)
 	return path.split(os.sep)
+
 
 #View files in a given folder
 @method_decorator(login_required, name="dispatch")
@@ -22,12 +30,11 @@ class FolderView(ListView):
 	path = None
 
 	def get(self, request, *args, **kwargs):
-		if args[0]=='':
-			self.path=None
-		else:
-			self.path=args[0]
-			if self.path[-1]=='/':
-				self.path = self.path[:-1]
+		if args: 
+			if args[0]=='':
+				self.path=None
+			else:
+				self.path=args[0]
 
 		if hasattr(request.user, 'drive'): #User has a drive
 			pass			
@@ -60,7 +67,6 @@ class FolderView(ListView):
 			context["path_dict"] = path_dict
 		context["folders"] = folders
 		context["files"] = files
-		context["drive_home"] = ''
 
 		#TEST CODE
 		# print "Path : ",path
@@ -71,3 +77,37 @@ class FolderView(ListView):
 		# print context
 
 		return context
+
+
+#View files in a given folder
+@method_decorator(login_required, name="dispatch")
+class FileView(View):
+	#GET - Download File
+	def get(self, request, *args, **kwargs):
+		if hasattr(request.user, 'drive'): #User has a drive
+			try:
+				file_id = request.GET['file_id']
+				file = File.objects.get(pk=file_id)
+				return HttpResponseRedirect(settings.MEDIA_URL+"tau/techsec/1/File.pdf")
+			except File.DoesNotExist:
+				error = "The Requested File Does Not Exist"
+				return HttpResponseRedirect(reverse('ErrorView', kwargs={'error':error}))
+		else: #User doesnt have a drive
+			return HttpResponseRedirect(reverse('FolderView'))
+
+#View to show errors to user
+@method_decorator(login_required, name="dispatch")
+class ErrorView(TemplateView):
+	template_name = "tau/error.html"
+
+	def get_context_data(self, **kwargs):
+		#Get the base's context
+		context = super(ErrorView, self).get_context_data(**kwargs)
+
+		#Get Error
+		error = kwargs['error']
+
+		context['error'] = error
+
+		return context
+

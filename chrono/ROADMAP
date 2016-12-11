@@ -1,0 +1,15 @@
+Issue
+	1.(1366, "Incorrect string value: '\\xC2\\x95We a...' for column 'body' at row 1")
+		Content-Type: text/plain; charset="iso-8859-1"
+		Content-Type: text/plain;charset=iso-8859-1
+
+Feature
+	Bootstrap UI and UX
+	Show events on date, rather than events after date
+	Whitelist mail-ids
+	Remaining Mail IDs should need approval
+	Remove Hover Effect
+	Edge cases
+		Same Event Reminder Mails
+	New email id should belong to what aliases?
+	NLP For Events

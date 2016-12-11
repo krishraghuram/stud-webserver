@@ -35,7 +35,7 @@ Dropzone.options.uploadzone = {
 		<!-- Breadcrumbs -->
 		<ul class="list-inline">
 			<li>
-				<a href="{% url 'FolderView' drive_home %}" class="btn btn-default btn-lg" >
+				<a href="{% url 'Home' %}" class="btn btn-default btn-lg" >
 					Drive
 				</a>
 			</li>				
@@ -75,9 +75,9 @@ Dropzone.options.uploadzone = {
 					<li>
 						<div class="col-lg-2">
 							<!-- a href should be set to file download view -->
-							<a href="#" class="btn btn-default btn-lg btn-block">
+							<a href="{% url 'FileView' %}?file_id={{file.id}}" class="btn btn-default btn-lg btn-block">
 								<span class="glyphicon glyphicon-file pull-left" ></span> 
-								{{ file.name }}
+								{{ file.name}}
 							</a>
 
 						</div>

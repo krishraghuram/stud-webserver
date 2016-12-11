@@ -18,6 +18,8 @@ from django.contrib import admin
 #For now, we use predefined login views. Later, we will have a custom login app with custon User model and custom Auth Backend
 from django.contrib.auth import views as auth_views
 from .views import StudView
+from django.conf.urls.static import static
+from django.conf import settings
 
 urlpatterns = [
 	#For now, we use default auth mechanism. 
@@ -28,4 +30,7 @@ urlpatterns = [
     url(r'^chrono/', include('chrono.urls')),
     url(r'^tau/', include('tau.urls')),
     url(r'^admin/', admin.site.urls),
-]
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+#THE ABOVE ONLY WORKS IN DEVELOPMENT
+#FOR DEPLOYMENT CHECK THIS
+#https://docs.djangoproject.com/en/1.10/howto/static-files/#deployment
