@@ -6,6 +6,9 @@
 {% block css %}
 <link rel="stylesheet" href="{% static 'tau/stylesheets/dropzone.css' %}">
 <link rel="stylesheet" href="{% static 'tau/stylesheets/folder.css' %}">
+<style type="text/css">
+	.top-buffer { margin-top:20px; }
+</style>
 {% endblock %}
 
 {% block js %}
@@ -16,6 +19,25 @@ Dropzone.options.uploadzone = {
 	paramName: "file", // The name that will be used to transfer the file
 	maxFilesize: 25, // MB
 	uploadMultiple: false, //Only one file will get uploaded
+	maxFiles: 1,
+    init: function () {
+	    // Set up any event handlers
+	    this.on("addedfile", function(){
+	    	console.log("submit");
+	    	jQuery("#form").submit();
+	    });
+	    // Not using this. Coz server errors cant be shown to users this way.
+	    // this.on("success", function(){console.log("redirect");location.reload()});
+	    this.on("success", function(){
+	    	console.log("redirect");
+	    	$.get("{% url 'FolderView' path %}", function(data, status){
+	    		if(status==400)
+	    		{jQuery("#error").text(data)}
+	    		else
+	    		{location.reload()}
+	    	});
+	    });
+	}
 };
 </script>
 {% endblock %}
@@ -47,7 +69,8 @@ Dropzone.options.uploadzone = {
 		<!-- Dropzone -->
 		<!-- Change Action to UploadView -->
 		<!-- IF ACTION IS EMPTY DROPZONE DOESNT WORK -->
-		<form id="uploadzone" class="dropzone" action="some-url" enctype="multipart/form-data">{% csrf_token %}
+		<form id="uploadzone" class="dropzone" action="{% url 'FileView' %}" enctype="multipart/form-data" method="post">{% csrf_token %}
+			<input type="hidden" name="action" value="upload">
 			<input type="hidden" name="path" value="{{path}}">
 		</form>
 
@@ -56,7 +79,7 @@ Dropzone.options.uploadzone = {
 			<div class="row jumbotron" style="background-color:#555">
 				{% for folder in folders %}
 					<li>
-						<div class="col-lg-2">
+						<div class="col-lg-2 top-buffer">
 							<a href="{% url 'FolderView' folder.path %}" class="btn btn-default btn-lg btn-block">
 								<span class="glyphicon glyphicon-folder-close pull-left" ></span> 
 								<span class="text-overflow-hidden">{{ folder.name }}</span>
@@ -66,7 +89,7 @@ Dropzone.options.uploadzone = {
 				{% endfor %}
 				{% for file in files %}
 					<li>
-						<div class="col-lg-2 ">
+						<div class="col-lg-2 top-buffer">
 							<!-- a href should be set to file download view -->
 							<a href="{% url 'FileView' %}?file_id={{file.id}}" class="btn btn-default btn-lg btn-block">
 								<span class="glyphicon glyphicon-file pull-left" ></span> 

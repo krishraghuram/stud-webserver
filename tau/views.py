@@ -82,7 +82,29 @@ class FolderView(ListView):
 #View files in a given folder
 @method_decorator(login_required, name="dispatch")
 class FileView(View):
-	#GET - Download File
+	#POST with action=upload -> Upload File
+	def upload(self):
+		if (self.request.FILES is not None) and (self.request.POST['path'] is not None):
+			drive = self.request.user.drive
+			path = self.request.POST['path']
+			folder = Folder.objects.filter(drive=self.request.user.drive, path=path).first()
+			file = self.request.FILES['file']
+		try:
+			File(drive=drive, parent=folder, file=file).save()
+			return HttpResponse(status=200)
+		except:
+			pass
+
+		#Error happens when 
+		#1.If check fails
+		#2.File save causes exception 
+		error = "An error has occurred in File Upload. Please contact devs."
+		#Since request was a post, we dont show error page.
+		# return HttpResponseRedirect(reverse('ErrorView', kwargs={'error':error}))
+		#Rather, we just return the error
+		return HttpResponse(error,status=400)
+
+	#GET -> Download File
 	def get(self, request, *args, **kwargs):
 		if hasattr(request.user, 'drive'): #User has a drive
 			try:
@@ -94,6 +116,28 @@ class FileView(View):
 				return HttpResponseRedirect(reverse('ErrorView', kwargs={'error':error}))
 		else: #User doesnt have a drive
 			return HttpResponseRedirect(reverse('FolderView'))
+
+	def post(self, request, *args, **kwargs):
+		print "In Post"
+		if hasattr(request.user, 'drive'): #User has a drive
+			print "User has a drive"
+			if request.POST['action'] is not None:
+				action = request.POST['action']
+				print "Action : ",action
+				if action=='upload':
+					return self.upload()
+				#To be implemented
+				# elif action=='delete':
+					# self.delete()
+				# elif action=='send':
+					# self.send()
+				# elif action=='move'
+					# self.move()
+			else: #No action specified
+				pass
+		else: #User doesnt have a drive
+			return HttpResponseRedirect(reverse('FolderView'))
+		
 
 #View to show errors to user
 @method_decorator(login_required, name="dispatch")

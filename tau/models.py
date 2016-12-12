@@ -175,8 +175,6 @@ class File(models.Model):
 		return os.path.join(self.parent.get_url_path(),self.name)
 
 	def clean(self):
-		print "Clean Starting"
-
 		#Limit File Size to 25Mibi Bytes
 		#This needs to be done at apache or nginx level.
 		#Limit User total space to 250 Mibi Bytes.
@@ -190,12 +188,9 @@ class File(models.Model):
 			raise ValidationError(str(self.drive.get_user())+"\'s Drive Space Limit Reached.")
 
 	def save(self, *args, **kwargs):
-		print "Save starting"
 		#Validate for remaining space on drive
 		self.full_clean()
-		print "In Save, full clean done"
-
-
+		
 		#In case user changes the uploaded file,
 		#Make sure the old file is deleted from filesystem
 		try:
