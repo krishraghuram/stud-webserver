@@ -11,3 +11,4 @@ border:medium dashed #000;
     display: block;
     max-width: 100%;
 }
+.top-buffer { margin-top:20px; }

@@ -4,41 +4,23 @@
 
 {% load static %}
 {% block css %}
-<link rel="stylesheet" href="{% static 'tau/stylesheets/dropzone.css' %}">
+<link rel="stylesheet" href="{% static 'dropzone/dropzone.css' %}">
 <link rel="stylesheet" href="{% static 'tau/stylesheets/folder.css' %}">
-<style type="text/css">
-	.top-buffer { margin-top:20px; }
-</style>
+<link rel="stylesheet" href="{% static 'jQuery-contextMenu/dist/jquery.contextMenu.min.css' %}">
 {% endblock %}
 
 {% block js %}
-<script src="{% static 'tau/javascripts/dropzone.js' %}"></script>
+<script src="{% static 'dropzone/dropzone.js' %}"></script>
+<script src="{% static 'jQuery-contextMenu/dist/jquery.contextMenu.min.js' %}"></script>
+<script src="{% static 'jQuery-contextMenu/dist/jquery.ui.position.min.js' %}"></script>
+<script src="{% static 'tau/javascripts/folder.js' %}"></script>
+<!-- Define context variables needed in external javascript as javascript variables -->
 <script type="text/javascript">
-// "upload" is the camelized version of the HTML element's ID
-Dropzone.options.uploadzone = {
-	paramName: "file", // The name that will be used to transfer the file
-	maxFilesize: 25, // MB
-	uploadMultiple: false, //Only one file will get uploaded
-	maxFiles: 1,
-    init: function () {
-	    // Set up any event handlers
-	    this.on("addedfile", function(){
-	    	console.log("submit");
-	    	jQuery("#form").submit();
-	    });
-	    // Not using this. Coz server errors cant be shown to users this way.
-	    // this.on("success", function(){console.log("redirect");location.reload()});
-	    this.on("success", function(){
-	    	console.log("redirect");
-	    	$.get("{% url 'FolderView' path %}", function(data, status){
-	    		if(status==400)
-	    		{jQuery("#error").text(data)}
-	    		else
-	    		{location.reload()}
-	    	});
-	    });
-	}
-};
+	var folderView = "{% url 'FolderView' '' %}";
+	var fileView = "{% url 'FileView' %}";
+	var errorView = "{% url 'ErrorView' ''%}"
+	var path = "{{path}}";
+	var csrftoken = '{{ csrf_token }}';
 </script>
 {% endblock %}
 
@@ -67,8 +49,6 @@ Dropzone.options.uploadzone = {
 		<div class="page-header"></div>
 
 		<!-- Dropzone -->
-		<!-- Change Action to UploadView -->
-		<!-- IF ACTION IS EMPTY DROPZONE DOESNT WORK -->
 		<form id="uploadzone" class="dropzone" action="{% url 'FileView' %}" enctype="multipart/form-data" method="post">{% csrf_token %}
 			<input type="hidden" name="action" value="upload">
 			<input type="hidden" name="path" value="{{path}}">
@@ -76,22 +56,25 @@ Dropzone.options.uploadzone = {
 
 		<!-- Folders and Files -->
 		<ul class="list-inline">
-			<div class="row jumbotron" style="background-color:#555">
+			<div class="row jumbotron context-menu-jumbotron" style="background-color:#555;min-height:50vh;">
+				<div id="folder-list">
 				{% for folder in folders %}
 					<li>
 						<div class="col-lg-2 top-buffer">
-							<a href="{% url 'FolderView' folder.path %}" class="btn btn-default btn-lg btn-block">
+							<a href="{% url 'FolderView' folder.path %}" class="btn btn-default btn-lg btn-block context-menu-folder">
 								<span class="glyphicon glyphicon-folder-close pull-left" ></span> 
 								<span class="text-overflow-hidden">{{ folder.name }}</span>
 							</a>
 						</div>
 					</li>
 				{% endfor %}
+				</div>
+				<div id="file-list">
 				{% for file in files %}
 					<li>
 						<div class="col-lg-2 top-buffer">
 							<!-- a href should be set to file download view -->
-							<a href="{% url 'FileView' %}?file_id={{file.id}}" class="btn btn-default btn-lg btn-block">
+							<a href="{% url 'FileView' %}?file_id={{file.id}}" class="btn btn-default btn-lg btn-block context-menu-file">
 								<span class="glyphicon glyphicon-file pull-left" ></span> 
 								<span class="text-overflow-hidden">{{ file.name }}</span>
 							</a>
@@ -99,6 +82,7 @@ Dropzone.options.uploadzone = {
 						</div>
 					</li>
 				{% endfor %}
+				</div>
 			</div>
 		</ul>
 	

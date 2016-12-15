@@ -22,12 +22,43 @@ def split_path(path):
 	return path.split(os.sep)
 
 
-#View files in a given folder
+#Folder Operations
 @method_decorator(login_required, name="dispatch")
 class FolderView(ListView):
 	template_name = "tau/folder.html"
 	queryset = Drive.objects.none() #Just to keep django happy
 	path = None
+
+	#POST with action=create -> Create Folder
+	def create(self):
+		try:
+			drive = self.request.user.drive
+			path = self.request.POST['path']
+			parent = Folder.objects.filter(drive=drive, path=path).first()
+			name = self.request.POST['name']
+			Folder(drive=drive, parent=parent, name=name).save()
+			return HttpResponse(status=200)
+		except:
+			pass
+
+		error = "An error has occurred in Folder Create. Please contact devs."
+		return HttpResponse(error,status=400)
+
+	#POST with action=delete -> Delete Folder
+	def delete(self):
+		try:
+			drive = self.request.user.drive
+			path = self.request.POST['path']
+			parent = Folder.objects.filter(drive=drive, path=path).first()
+			name = self.request.POST['name']
+			Folder.objects.filter(drive=drive, parent=parent, name=name).delete()
+			return HttpResponse(status=200)
+		except:
+			pass
+
+		error = "An error has occurred in Folder Delete. Please contact devs."
+		return HttpResponse(error,status=400)
+
 
 	def get(self, request, *args, **kwargs):
 		if args: 
@@ -37,15 +68,29 @@ class FolderView(ListView):
 				self.path=args[0]
 
 		if hasattr(request.user, 'drive'): #User has a drive
-			pass			
+			return super(FolderView, self).get(request, *args, **kwargs)
 		else: #User doesnt have a drive
-			#Create a new drive for the user
-			drive = Drive(user=request.user)
-			drive.save()
-			#Welcome the new user to tau
-			self.template_name = "tau/welcome.html"
+			#Redirect him to DriveView so that he can create a drive
+			return HttpResponseRedirect(reverse('DriveView'))
 
-		return super(FolderView, self).get(request, *args, **kwargs)
+	def post(self, request, *args, **kwargs):
+		if hasattr(request.user, 'drive'): #User has a drive
+			if request.POST['action'] is not None:
+				action = request.POST['action']
+				if action=='create':
+					return self.create()
+				elif action=='delete':
+					return self.delete()
+				#To be implemented
+				# elif action=='send':
+					# self.send()
+				# elif action=='rename'
+					# self.rename()
+			else: #No action specified
+				error = "An error has occurred in Folder. Please contact devs."
+				return HttpResponse(error,status=400)
+		else: #User doesnt have a drive
+			return HttpResponseRedirect(reverse('FolderView'))
 	
 	def get_context_data(self, **kwargs):
 		#Get the base's context
@@ -69,39 +114,44 @@ class FolderView(ListView):
 		context["files"] = files
 
 		#TEST CODE
-		# print "Path : ",path
-		# print "Folders : ",folders.values()
-		# print "Path_Dicr :", path_dict
-		# for i in path_dict:
-		# 	print i,path_dict[i]
-		# print context
+
+	
+	
 
 		return context
 
 
-#View files in a given folder
+#File Operations
 @method_decorator(login_required, name="dispatch")
 class FileView(View):
 	#POST with action=upload -> Upload File
 	def upload(self):
-		if (self.request.FILES is not None) and (self.request.POST['path'] is not None):
+		try:
 			drive = self.request.user.drive
 			path = self.request.POST['path']
-			folder = Folder.objects.filter(drive=self.request.user.drive, path=path).first()
+			parent = Folder.objects.filter(drive=drive, path=path).first()
 			file = self.request.FILES['file']
-		try:
-			File(drive=drive, parent=folder, file=file).save()
+			File(drive=drive, parent=parent, file=file).save()
 			return HttpResponse(status=200)
 		except:
 			pass
 
-		#Error happens when 
-		#1.If check fails
-		#2.File save causes exception 
 		error = "An error has occurred in File Upload. Please contact devs."
-		#Since request was a post, we dont show error page.
-		# return HttpResponseRedirect(reverse('ErrorView', kwargs={'error':error}))
-		#Rather, we just return the error
+		return HttpResponse(error,status=400)
+
+	#POST with action=delete -> Delete File
+	def delete(self):
+		try:
+			drive = self.request.user.drive
+			path = self.request.POST['path']
+			parent = Folder.objects.filter(drive=drive, path=path).first()
+			name = self.request.POST['name']
+			File.objects.filter(drive=drive, parent=parent, name=name).first().delete()
+			return HttpResponse(status=200)
+		except:
+			pass
+
+		error = "An error has occurred in File Delete. Please contact devs."
 		return HttpResponse(error,status=400)
 
 	#GET -> Download File
@@ -112,32 +162,56 @@ class FileView(View):
 				file = File.objects.get(pk=file_id)
 				return HttpResponseRedirect(file.get_url_path())
 			except File.DoesNotExist:
-				error = "The Requested File Does Not Exist"
+				error = "An error has occurred in File. Please contact devs."
 				return HttpResponseRedirect(reverse('ErrorView', kwargs={'error':error}))
 		else: #User doesnt have a drive
 			return HttpResponseRedirect(reverse('FolderView'))
 
 	def post(self, request, *args, **kwargs):
-		print "In Post"
 		if hasattr(request.user, 'drive'): #User has a drive
-			print "User has a drive"
 			if request.POST['action'] is not None:
 				action = request.POST['action']
-				print "Action : ",action
 				if action=='upload':
 					return self.upload()
+				elif action=='delete':
+					return self.delete()
 				#To be implemented
-				# elif action=='delete':
-					# self.delete()
 				# elif action=='send':
 					# self.send()
 				# elif action=='move'
 					# self.move()
 			else: #No action specified
-				pass
+				error = "An error has occurred in File. Please contact devs."
+				return HttpResponse(error,status=400)
 		else: #User doesnt have a drive
 			return HttpResponseRedirect(reverse('FolderView'))
 		
+
+#Drive Operations
+@method_decorator(login_required, name="dispatch")
+class DriveView(TemplateView):
+	template_name = "tau/drive.html"
+
+	def create(self):
+		try:
+			user = self.request.user
+			print user
+			Drive(user=user).save()
+			return HttpResponse(status=200)
+		except:
+			error = "An error has occurred in Drive Create. Please contact devs."
+			return HttpResponse(error,status=400)
+
+
+	def post(self, request, *args, **kwargs):
+		if request.POST['action'] is not None:
+			action = request.POST['action']
+			if action=='create':
+				return self.create()
+			#Future Actions
+		else: #No action specified
+			error = "An error has occurred in Drive. Please contact devs."
+			return HttpResponse(error,status=400)
 
 #View to show errors to user
 @method_decorator(login_required, name="dispatch")
@@ -154,4 +228,19 @@ class ErrorView(TemplateView):
 		context['error'] = error
 
 		return context
+
+
+class NavView(TemplateView):
+	template_name = "tau/error.html"
+
+	def get(self, request, *args, **kwargs):
+		if args: 
+			url=args[0]
+			if(url=="howto"):
+				self.template_name = "tau/howto.html" 
+			elif(url=="contact"):
+				self.template_name = "tau/contact.html" 
+
+
+		return super(NavView, self).get(request, *args, **kwargs)
 

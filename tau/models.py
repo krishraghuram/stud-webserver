@@ -98,7 +98,6 @@ class Folder(models.Model):
 
 		#Check for max subfolders in a folder
 		subfolders = Folder.objects.filter(parent = self.parent)
-		print len(subfolders)
 		if len(subfolders)+1>Constants.max_subfolders:
 			raise ValidationError("Max Subfolders in any folder is "+str(Constants.max_subfolders))
 
@@ -158,7 +157,6 @@ def folder_post_save(sender, instance, **kwargs):
 
 #A callable upload_to for the FileField
 def upload_to(instance, filename):
-	print "Upload_to Starting"
 	#Dont bother doing this, since django might anyway destroy the filename in get_available_name, which will lead to inconsistencies between database and filesystem
 	#instance.name = filename
 	#Instead, we get instance.name in post_save and save object to database again
@@ -166,7 +164,7 @@ def upload_to(instance, filename):
 	return os.path.join(instance.parent.get_full_path(),filename)
 
 class File(models.Model):
-	drive = models.ForeignKey("Drive", models.PROTECT) #Protects Drive from being deleted when files exist
+	drive = models.ForeignKey("Drive", models.CASCADE) #Protects Drive from being deleted when files exist
 	parent = models.ForeignKey("Folder", models.CASCADE) #Parent cant be null or blank, so files cant be in root folder. They should be inside a folder. 
 	file = models.FileField(upload_to=upload_to)
 	name = models.CharField(max_length=100, editable=False, blank=True)
@@ -175,9 +173,9 @@ class File(models.Model):
 		return os.path.join(self.parent.get_url_path(),self.name)
 
 	def clean(self):
-		#Limit File Size to 25Mibi Bytes
+		#Limit File Size.
 		#This needs to be done at apache or nginx level.
-		#Limit User total space to 250 Mibi Bytes.
+		#Limit User total space.
 		try:
 			this = File.objects.get(id=self.id) #Get the file object from database	
 			extra = this.file.size #The extra space that will be obtained due to deletion of old file.
@@ -223,4 +221,3 @@ def file_post_save(sender, instance, **kwargs):
 	if instance.name != os.path.basename(instance.file.name): #If is necessary to avoid infinite loop
 		instance.name = os.path.basename(instance.file.name)
 		instance.save()
-
