@@ -38,6 +38,7 @@ Creating a virtual environment for the project
 		set ALLOWED_HOSTS=['machine-ip']
 		set DATABASE OPTIONS
 		set STATIC_ROOT='/home/ubuntu/stud/stud/static/'
+		set MEDIA_ROOT = '/home/ubuntu/stud/stud/media/'
 	python manage.py makemigrations
 	python manage.py migrate
 	python manage.py createsuperuser
