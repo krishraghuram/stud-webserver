@@ -1,0 +1,29 @@
+{% extends "main/base.html" %}
+{% load static %}
+
+{% block title %}Stud{% endblock %}
+
+{% block css %}
+<link href="{% static 'main/stylesheets/login.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block js %}{% endblock %}
+
+{% block content %}
+	<div class="container">
+
+		<form class="form-signin" method="post">
+			{% csrf_token %}
+			<h2 class="form-signin-heading">Please sign in</h2>
+            <div class="input-group">
+            	<label for="inputEmail" class="sr-only">Webmail</label>
+                <input type="text" class="form-control" id="{{ form.username.id_for_label }}" maxlength="30" name="{{ form.username.html_name }}" placeholder="Webmail" type="text" /> 
+                <label for="inputPassword" class="sr-only">Password</label>
+                <input type="password" class="form-control" id="{{ form.password.id_for_label }}" maxlength="30" name="{{ form.password.html_name }}" placeholder="Password" type="text" /> 
+                {{ field.errors }}
+            </div>
+			<button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
+		</form>
+
+	</div> <!-- /container -->
+{% endblock %}

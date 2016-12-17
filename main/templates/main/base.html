@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+{% load static %}
+<html>
+
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+	<title>{% block title %}{% endblock %}</title>
+	<!-- Stylesheets -->
+	<link rel="stylesheet" href="{% static 'bootstrap/css/bootstrap.min.css' %}">
+	<link rel="stylesheet" href="{% static 'font-awesome/css/font-awesome.min.css' %}">
+	{% block css %}{% endblock %}
+	<!-- Javascript -->
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+	<script src="{% static 'bootstrap/js/bootstrap.min.js' %}"></script>
+	{% block js %}{% endblock %}
+</head>
+
+<body>
+	<nav class="navbar navbar-inverse navbar-static-top" style="margin:0px">
+		<div class="container">
+			<div class="navbar-header">
+
+				<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+				<span class="sr-only">Toggle navigation</span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				</button>
+				<a class="navbar-brand" href="{% url 'MainView' %}">IITG Stud</a>
+			</div>
+			<div id="navbar" class="collapse navbar-collapse">
+				<ul class="nav navbar-nav navbar-right">
+					<!--About, Feedback and Contact : Url tags will be added after their views are made -->
+					<li><a href="{% url 'NavView' 'howto' %}">How to Use</a></li>
+					<li><a href="https://goo.gl/RpgP28">Feedback</a></li>
+					<li><a href="{% url 'NavView' 'contact' %}">Contact</a></li>
+					{% if user.is_authenticated %}
+					<li><a href="{% url 'logout' %}">Logout</a></li>
+					{% else %}
+					<li><a href="{% url 'login' %}">Login</a></li>
+					{% endif %}
+				</ul>
+			</div><!--/.nav-collapse -->
+		</div>
+	</nav>
+
+	<!-- Used to Display Errors -->
+
+	{% block content %}{% endblock %}
+</body>
+</html>

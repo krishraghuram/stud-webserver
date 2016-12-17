@@ -31,6 +31,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'main.apps.MainConfig',
     'tau.apps.TauConfig',
     'chrono.apps.ChronoConfig',
     'django.contrib.admin',
@@ -129,7 +130,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.10/howto/static-files/
 STATIC_URL = '/static/'
-LOGIN_URL = '/login/'
-LOGIN_REDIRECT_URL = '/tau/'
+LOGIN_URL = '/main/login/'
+LOGIN_REDIRECT_URL = '/main/'
 MEDIA_ROOT = '/home/raghuram/Workspace/WebDevelopment/Django/stud/stud/media/'
 MEDIA_URL = '/media/'

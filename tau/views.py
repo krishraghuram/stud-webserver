@@ -8,7 +8,7 @@ from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
 import os
 from collections import OrderedDict
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, HttpResponseForbidden
 from django.urls import reverse
 from django.views import View
 from django.views.generic.base import TemplateView
@@ -113,11 +113,6 @@ class FolderView(ListView):
 		context["folders"] = folders
 		context["files"] = files
 
-		#TEST CODE
-
-	
-	
-
 		return context
 
 
@@ -160,7 +155,11 @@ class FileView(View):
 			try:
 				file_id = request.GET['file_id']
 				file = File.objects.get(pk=file_id)
-				return HttpResponseRedirect(file.get_url_path())
+				#Check if user is authorized to get this file
+				if request.user.drive == file.drive:
+					return HttpResponseRedirect(file.get_url_path())
+				else:
+					return HttpResponseForbidden("<h1 style='text-align:center;'>600 : Not your file.</h1>")	
 			except File.DoesNotExist:
 				error = "An error has occurred in File. Please contact devs."
 				return HttpResponseRedirect(reverse('ErrorView', kwargs={'error':error}))
