@@ -21,7 +21,6 @@ from django.conf import settings
 urlpatterns = [
     url(r'^main/', include('main.urls')), 
     url(r'^chrono/', include('chrono.urls')),
-    url(r'^tau/', include('tau.urls')),
     url(r'^admin/', admin.site.urls),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 #THE ABOVE ONLY WORKS IN DEVELOPMENT
